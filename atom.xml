@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Curious Explorations]]></title>
+  <link href="http://kmmankad.github.com/atom.xml" rel="self"/>
+  <link href="http://kmmankad.github.com/"/>
+  <updated>2016-02-09T20:40:41+05:30</updated>
+  <id>http://kmmankad.github.com/</id>
+  <author>
+    <name><![CDATA[kmmankad]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[My New Blog]]></title>
+    <link href="http://kmmankad.github.com/blog/2016/02/09/my-new-blog/"/>
+    <updated>2016-02-09T20:33:31+05:30</updated>
+    <id>http://kmmankad.github.com/blog/2016/02/09/my-new-blog</id>
+    <content type="html"><![CDATA[<p>Now that I have this shiny new blog setup, here&rsquo;s where I will be continuing (albeit after more than 2 years) writing about my explorations.
+My <a href="http://kmmankad.blogspot.com">older blog</a> will stay on though.</p>
+]]></content>
+  </entry>
+  
+</feed>
