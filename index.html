@@ -9,8 +9,7 @@
   <meta name="author" content="kmmankad">
 
   
-  <meta name="description" content="Now that I have this shiny new blog setup, here&rsquo;s where I will be continuing (albeit after more than 2 years) writing about my explorations.
-My &hellip;">
+  <meta name="description" content="After a quick and very helpful markdown tutorial over at www.markdowntutorial.com, heres a post. As someone who works for a large tech company, I &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -85,6 +84,66 @@ My &hellip;">
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/02/09/replace-text-in-incoming-email-with-outlook-vba/">Replace Text in Incoming Email With Outlook VBA</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-09T21:38:07+05:30'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>9</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>9:38 pm</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>After a quick and very helpful markdown tutorial over at <a href="www.markdowntutorial.com">www.markdowntutorial.com</a>, heres a post.</p>
+
+<p>As someone who works for a large tech company, I need to write a lot of email where I need to refer to one or more bugs or commit-IDs, and manually adding hyperlinks to emails soon lost its charm. In an age where almost everything we encounter in our day that can be programmed now - surely there had to be a better way to do this. I had done some tinkering earlier with Excel VBA, but Outlook was something I never looked deeper into.</p>
+
+<p>Some googling later, I chanced on this <a href="http://superuser.com/a/464027">superuser answer</a>, that seemed to document exactly what I wanted. Which was basically, I&rsquo;d write an email with some text like this:</p>
+
+<blockquote><p>Please pull the fix for Bug#123456</p></blockquote>
+
+<p>and I wanted a script to turn this into a hyperlink to a shortlink created from the Bug&rsquo;s ID# (123456), like so:</p>
+
+<blockquote><p>Please pull the fix for <a href="http://coolbugs/123456">Bug#123456</a></p></blockquote>
+
+<p>So, I plonked the prescribed code in from the <a href="http://superuser.com/a/464027">superuser answer</a> to see if it would work, and it didn&rsquo;t. While it did do the actual replace-text-with-a-hyperlink, it stripped the email of all formatting, and the hyperlink wasn&rsquo;t the kind I was expecting either (I wanted the link text to remain intact). Some more time reading about Outlook VBA and the MailItem class revealed that this wasn&rsquo;t the right way to tackle this when your Outlook Client uses the HTML Editor for composing and viewing email. So I decided to roll my own solution.</p>
+
+<p>The code is available in this Github repo - <a href="https://github.com/kmmankad/OutlookEmailHyperlinker">OutlookEmailHyperlinker</a> and works with Outlook 2013. I&rsquo;m not sure if further description into its gory details is that attractive, so I&rsquo;ll keep it to this description on this for now.</p>
+
+<p>Pull requests are most welcome!</p>
+
+<h3>Code</h3>
+
+<ul>
+<li><a href="https://github.com/kmmankad/OutlookEmailHyperlinker">OutlookEmailHyperlinker</a></li>
+</ul>
+
+
+<h3>References</h3>
+
+<ul>
+<li><a href="https://msdn.microsoft.com/en-us/library/dd492012%28v=office.12%29.aspx">MSDN Reference on working with Outlook Email Bodies</a></li>
+</ul>
+
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>

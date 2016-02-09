@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Curious Explorations]]></title>
-  <link href="http://kmmankad.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Outlook | Curious Explorations]]></title>
+  <link href="http://kmmankad.github.io/blog/categories/outlook/atom.xml" rel="self"/>
   <link href="http://kmmankad.github.io/"/>
   <updated>2016-02-09T21:51:24+05:30</updated>
   <id>http://kmmankad.github.io/</id>
@@ -49,26 +49,6 @@
 <li><a href="https://msdn.microsoft.com/en-us/library/dd492012%28v=office.12%29.aspx">MSDN Reference on working with Outlook Email Bodies</a></li>
 </ul>
 
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[My New Blog]]></title>
-    <link href="http://kmmankad.github.io/blog/2016/02/09/my-new-blog/"/>
-    <updated>2016-02-09T20:33:31+05:30</updated>
-    <id>http://kmmankad.github.io/blog/2016/02/09/my-new-blog</id>
-    <content type="html"><![CDATA[<p>Now that I have this shiny new blog setup, here&rsquo;s where I will be continuing (albeit after more than 2 years) writing about my explorations.
-My <a href="http://kmmankad.blogspot.com">older blogspot blog</a> will stay on though.</p>
-
-<p>Here are some links on setting up <a href="http://octopress.org/">Octopress</a> with <a href="https://pages.github.com/">github pages</a> that I found useful:</p>
-
-<ul>
-<li><a href="http://paulsturgess.co.uk/blog/2013/04/24/hello-octopress-and-github-pages/">Paul Sturgess&rsquo;s Hello Octopress &amp; Github Pages</a></li>
-<li><a href="http://learnaholic.me/2012/10/10/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/">Kornelije Sajler&rsquo;s Guide On Deploying Octopress</a></li>
-</ul>
-
-
-<p>Oh, and I&rsquo;m using the <a href="https://github.com/lucaslew/whitespace">whitespace</a> theme.</p>
 ]]></content>
   </entry>
   
