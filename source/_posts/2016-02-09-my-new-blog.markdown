@@ -12,5 +12,6 @@ Here are some links on setting up [Octopress](http://octopress.org/) with [githu
 
 * [Paul Sturgess's Hello Octopress & Github Pages](http://paulsturgess.co.uk/blog/2013/04/24/hello-octopress-and-github-pages/)
 * [Kornelije Sajler's Guide On Deploying Octopress](http://learnaholic.me/2012/10/10/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/)
+* [GangMax's post on adding custom pages to octopress](http://gangmax.me/blog/2012/05/04/add-about-page-in-octopress/)
 
 Oh, and I'm using the [whitespace](https://github.com/lucaslew/whitespace) theme.
