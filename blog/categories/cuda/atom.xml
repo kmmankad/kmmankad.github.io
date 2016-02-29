@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Curious Explorations]]></title>
-  <link href="http://kmmankad.github.io/atom.xml" rel="self"/>
+  <title><![CDATA[Category: Cuda | Curious Explorations]]></title>
+  <link href="http://kmmankad.github.io/blog/categories/cuda/atom.xml" rel="self"/>
   <link href="http://kmmankad.github.io/"/>
   <updated>2016-02-29T21:55:30+05:30</updated>
   <id>http://kmmankad.github.io/</id>
@@ -45,66 +45,6 @@ This book definitely dives a bit deeper with regard to the technical aspects. Si
 <p>Oh, and theres always <a href="http://www.stackoverflow.com/questions/tagged/cuda">stackoverflow</a>, <a href="www.reddit.com/r/CUDA">/r/CUDA</a> and <a href="https://devtalk.nvidia.com/default/board/53/accelerated-computing/">NVIDIA&rsquo;s developer forum</a> if you get stuck somewhere - or even just want to discuss your ideas.</p>
 
 <p>As with any new endeavor, you will fail and learn a lot. But the key as always is to persevere and accept experience that comes your way, whatever the form.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[Replace Text in Incoming Email With Outlook VBA]]></title>
-    <link href="http://kmmankad.github.io/blog/2016/02/09/replace-text-in-incoming-email-with-outlook-vba/"/>
-    <updated>2016-02-09T21:38:07+05:30</updated>
-    <id>http://kmmankad.github.io/blog/2016/02/09/replace-text-in-incoming-email-with-outlook-vba</id>
-    <content type="html"><![CDATA[<p>After a quick and very helpful markdown tutorial over at <a href="www.markdowntutorial.com">www.markdowntutorial.com</a>, heres a post.</p>
-
-<p>As someone who works for a large tech company, I need to write a lot of email where I need to refer to one or more bugs or commit-IDs, and manually adding hyperlinks to emails soon lost its charm. In an age where almost everything we encounter in our day that can be programmed now - surely there had to be a better way to do this. I had done some tinkering earlier with Excel VBA, but Outlook was something I never looked deeper into.</p>
-
-<p>Some googling later, I chanced on this <a href="http://superuser.com/a/464027">superuser answer</a>, that seemed to document exactly what I wanted. Which was basically, I&rsquo;d write an email with some text like this:</p>
-
-<blockquote><p>Please pull the fix for Bug#123456</p></blockquote>
-
-<p>and I wanted a script to turn this into a hyperlink to a shortlink created from the Bug&rsquo;s ID# (123456), like so:</p>
-
-<blockquote><p>Please pull the fix for <a href="http://coolbugs/123456">Bug#123456</a></p></blockquote>
-
-<p>So, I plonked the prescribed code in from the <a href="http://superuser.com/a/464027">superuser answer</a> to see if it would work, and it didn&rsquo;t. While it did do the actual replace-text-with-a-hyperlink, it stripped the email of all formatting, and the hyperlink wasn&rsquo;t the kind I was expecting either (I wanted the link text to remain intact). Some more time reading about Outlook VBA and the MailItem class revealed that this wasn&rsquo;t the right way to tackle this when your Outlook Client uses the HTML Editor for composing and viewing email. So I decided to roll my own solution.</p>
-
-<p>The code is available in this Github repo - <a href="https://github.com/kmmankad/OutlookEmailHyperlinker">OutlookEmailHyperlinker</a> and works with Outlook 2013. I&rsquo;m not sure if further description into its gory details is that attractive, so I&rsquo;ll keep it to this description on this for now.</p>
-
-<p>Pull requests are most welcome!</p>
-
-<h3>Code</h3>
-
-<ul>
-<li><a href="https://github.com/kmmankad/OutlookEmailHyperlinker">OutlookEmailHyperlinker</a></li>
-</ul>
-
-
-<h3>References</h3>
-
-<ul>
-<li><a href="https://msdn.microsoft.com/en-us/library/dd492012%28v=office.12%29.aspx">MSDN Reference on working with Outlook Email Bodies</a></li>
-</ul>
-
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[My New Blog]]></title>
-    <link href="http://kmmankad.github.io/blog/2016/02/09/my-new-blog/"/>
-    <updated>2016-02-09T20:33:31+05:30</updated>
-    <id>http://kmmankad.github.io/blog/2016/02/09/my-new-blog</id>
-    <content type="html"><![CDATA[<p>Now that I have this shiny new blog setup, here&rsquo;s where I will be continuing (albeit after more than 2 years) writing about my explorations.
-My <a href="http://kmmankad.blogspot.com">older blogspot blog</a> will stay on though.</p>
-
-<p>Here are some links on setting up <a href="http://octopress.org/">Octopress</a> with <a href="https://pages.github.com/">github pages</a> that I found useful:</p>
-
-<ul>
-<li><a href="http://paulsturgess.co.uk/blog/2013/04/24/hello-octopress-and-github-pages/">Paul Sturgess&rsquo;s Hello Octopress &amp; Github Pages</a></li>
-<li><a href="http://learnaholic.me/2012/10/10/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/">Kornelije Sajler&rsquo;s Guide On Deploying Octopress</a></li>
-<li><a href="http://gangmax.me/blog/2012/05/04/add-about-page-in-octopress/">GangMax&rsquo;s post on adding custom pages to octopress</a></li>
-</ul>
-
-
-<p>Oh, and I&rsquo;m using the <a href="https://github.com/lucaslew/whitespace">whitespace</a> theme.</p>
 ]]></content>
   </entry>
   

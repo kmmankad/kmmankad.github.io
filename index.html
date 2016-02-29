@@ -9,7 +9,7 @@
   <meta name="author" content="kmmankad">
 
   
-  <meta name="description" content="After a quick and very helpful markdown tutorial over at www.markdowntutorial.com, heres a post. As someone who works for a large tech company, I &hellip;">
+  <meta name="description" content="This is a post about various available resources, and how you could go about becoming a real CUDA pro. This post isn&rsquo;t about convincing you &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -85,6 +85,62 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/02/29/so-you-want-to-cuda/">So You Want to CUDA?</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-02-29T19:12:59+05:30'><span class='date'><span class='date-month'>Feb</span> <span class='date-day'>29</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:12 pm</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>This is a post about various available resources, and how you could go about becoming a real CUDA pro. This post isn&rsquo;t about convincing you about why you should definitely learn CUDA - I&rsquo;ll leave that to the voices in and around your head.</p>
+
+<p>To start out, I would highly recommend going through the free MOOC from Udacity - <a href="https://www.udacity.com/course/intro-to-parallel-programming--cs344">Intro to Parallel Programming</a>. This is a course that isn&rsquo;t too technical right off the bat and yet its assignments are non-trivial and could also be a bit challenging for some. But they really help you get some real world exposure to parallel programming in general, apart from the CUDA specific knowledge you would gain in the process. The course really helps develop a &lsquo;think parallel&rsquo; mindset - which I feel is as important, (if not more) compared to the knowledge of the actual semantics of a specific programming language or platform. The best part? You can do this without any special hardware - its all in the cloud!</p>
+
+<p>Along with the udacity course, there are a couple of great texts I would urge you guys to get:</p>
+
+<ol>
+<li><p><a href="http://www.amazon.com/CUDA-Example-Introduction-General-Purpose-Programming/dp/0131387685/ref=pd_bbs_sr_1/103-9839083-1501412?ie=UTF8&amp;s=books&amp;qid=1186428068&amp;sr=1-1">Sanders &amp; Kandrot. CUDA by Example: An Introduction to General-Purpose GPU Programming</a>
+This first one is a good text for beginners because it presents a very approachable learning curve. It has lots of small code examples, something I personally like. It lives up to its title in that respect. Having digestible code examples allow you to tinker with different concepts till you get the hang of things, without the overhead of programming full assignments. The book&rsquo;s code is available for download on <a href="https://developer.nvidia.com/cuda-example">NVIDIA&rsquo;s site here</a> and serves as handy reference later on as well. However, this book does not go too deep into the application side, and the &lsquo;bigger picture&rsquo; of parallel programming. Thats where the next book is better.</p></li>
+<li><p><a href="http://store.elsevier.com/Programming-Massively-Parallel-Processors/David-Kirk/isbn-9780124159921/">Kirk &amp; Hwu. Programming Massively Parallel Processors</a>
+This book definitely dives a bit deeper with regard to the technical aspects. Since it was created keeping in mind a typical graduate-level course on this subject, each chapter has exercises as well. Chapter 6 on performance considerations, and Chapter 7 on floating point math are two I consider particularly important for a learner to understand early on. The chapters on computational thinking and OpenCL make this a complete text on parallel programming. In addition, the code for the case studies discussed has been made available <a href="http://www.ks.uiuc.edu/Research/vmd/projects/ece498/">freely available online.</a></p></li>
+</ol>
+
+
+<p>And as you get more hands-on with the programming aspects of it, you will be able to appreciate the wealth of info in the <a href="http://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html">CUDA Best Practices Guide</a>. I actually have a printed copy I refer to often.</p>
+
+<p>Among must-read blogs, there is <a href="https://devblogs.nvidia.com/parallelforall/">NVIDIA&rsquo;s Parallel Forall blog</a> that has some really well written articles on a wide variety of topics and applications in accelerated computing. Most of the CUDA related content posted here is best understood by someone who already has a higher-than-basic understanding of CUDA. Still, do subscribe.</p>
+
+<p>I almost forgot to mention the <a href="https://nvidia.qwiklab.com/">hands-on labs offered by NVIDIA via qwiklabs</a>. While these aren&rsquo;t anywhere as fully featured as the resources mentioned above, these serve as good exercises nonetheless. These are also in the cloud, hosted on <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cluster_computing.html">GPU enabled AWS instances</a>.</p>
+
+<p>Though there are lots of such free(-ish) learning resources out there, you really need access to some hardware in order to really sharpen your skills. But this does not mean you need to spend big bucks. Lots of older GPUs support CUDA, and if you&rsquo;re part of an academic institution, you could also look at <a href="https://developer.nvidia.com/academic_hw_seeding">Nvidia&rsquo;s hardware grant program</a>. You can also run your CUDA code on your multicore CPU (coming-soon-a-link-to-a-tutorial-on-how-to-do-that)</p>
+
+<p>And finally, you need to have a project that you really want to invest your sweat and skills into. Something to tie all of this together. It could be a cryptographic algorithm, or a massively parallel numerical method or perhaps something cool in the field of machine learning. Maybe you could build a encoder/decoder for an image format. Basically, you can CUDA-fy mostly anything compute intensive around you. I&rsquo;m not saying that <em>everything</em> is going to work well with CUDA - thats the topic for another blog post. But as someone starting out, one shouldn&rsquo;t be overly picky about that.</p>
+
+<p>Oh, and theres always <a href="http://www.stackoverflow.com/questions/tagged/cuda">stackoverflow</a>, <a href="www.reddit.com/r/CUDA">/r/CUDA</a> and <a href="https://devtalk.nvidia.com/default/board/53/accelerated-computing/">NVIDIA&rsquo;s developer forum</a> if you get stuck somewhere - or even just want to discuss your ideas.</p>
+
+<p>As with any new endeavor, you will fail and learn a lot. But the key as always is to persevere and accept experience that comes your way, whatever the form.</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>
@@ -176,6 +232,7 @@ My <a href="http://kmmankad.blogspot.com">older blogspot blog</a> will stay on t
 <ul>
 <li><a href="http://paulsturgess.co.uk/blog/2013/04/24/hello-octopress-and-github-pages/">Paul Sturgess&rsquo;s Hello Octopress &amp; Github Pages</a></li>
 <li><a href="http://learnaholic.me/2012/10/10/deploying-octopress-to-github-pages-and-setting-custom-subdomain-cname/">Kornelije Sajler&rsquo;s Guide On Deploying Octopress</a></li>
+<li><a href="http://gangmax.me/blog/2012/05/04/add-about-page-in-octopress/">GangMax&rsquo;s post on adding custom pages to octopress</a></li>
 </ul>
 
 

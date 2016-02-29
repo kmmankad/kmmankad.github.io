@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://kmmankad.github.io/blog/2016/02/29/so-you-want-to-cuda/</loc>
+    <lastmod>2016-02-29T19:12:59+05:30</lastmod>
+  </url>
+  <url>
     <loc>http://kmmankad.github.io/blog/2016/02/09/replace-text-in-incoming-email-with-outlook-vba/</loc>
     <lastmod>2016-02-09T21:38:07+05:30</lastmod>
   </url>
@@ -22,5 +26,8 @@
   </url>
   <url>
     <loc>http://kmmankad.github.io/blog/categories/vba/</loc>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/categories/cuda/</loc>
   </url>
 </urlset>
