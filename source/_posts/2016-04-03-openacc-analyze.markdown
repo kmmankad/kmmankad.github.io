@@ -247,6 +247,9 @@ Note the `device_type(nvidia)` clause which means that this `vector(32)` will be
 ```
 So, its 32 for NVIDIA cards, 256 for AMD Radeon (LoL) and 16 by default if the device is neither.
 
+## Code
+Complete code available on github at - [matasano-cuda/tree/master/challenge1/openacc](https://github.com/kmmankad/matasano-cuda/tree/master/challenge1/openacc)
+
 Hope this wall of text has helped you better understand OpenACC and parallel programming in general. Thats where Part-1 of this ends. Part-2 will cover profiling, tweaking and more best practices.
 
 I'd like to thank [@JeffLarkin](http://www.twitter.com/JeffLarkin) for releasing all this awesome training content on the internet and for patiently guiding a newbie like myself through some of the trickier bits.
