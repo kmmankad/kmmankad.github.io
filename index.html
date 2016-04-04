@@ -130,6 +130,8 @@ every last drop of that good perf juice from your software and hardware.</p>
 
 <p>OpenACC tutorials online often use the Jacobi Iteration/sAXPY example to demonstrate OpenACC, but all that those examples teach us are syntax constructs. However, if you use OpenACC in the real world, you’ll know it&rsquo;s all about how you analyze your source code, understand its scope for parallelism and finally express that formally via OpenACC syntax. What this post is really about is about the analysis of a simple program, which is hopefully a little less trivial than the Jacobi type examples all over the net. Also, this is not one of those <em>100X in 2 hours</em> posts, because that does not always happen.</p>
 
+<h2>Setup</h2>
+
 <p>First off, some logistics about tool installation and setup.</p>
 
 <ul>
@@ -154,6 +156,8 @@ every last drop of that good perf juice from your software and hardware.</p>
 </span><span class='line'>Copyright <span class="o">(</span>c<span class="o">)</span> 2015, NVIDIA CORPORATION.  All rights reserved.
 </span></code></pre></td></tr></table></div></figure>
 
+
+<h2>The target</h2>
 
 <p>Now, onto our target today - a subroutine that converts a hexadecimal string to base64. I picked this up from the <a href="http://cryptopals.com/">matasano cryptography challenges</a> I&rsquo;m attempting on the side and decided it&rsquo;d be a good example for this tutorial.</p>
 
