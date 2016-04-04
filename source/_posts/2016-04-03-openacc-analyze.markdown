@@ -25,6 +25,7 @@ every last drop of that good perf juice from your software and hardware.
 
 OpenACC tutorials online often use the Jacobi Iteration/sAXPY example to demonstrate OpenACC, but all that those examples teach us are syntax constructs. However, if you use OpenACC in the real world, you’ll know it's all about how you analyze your source code, understand its scope for parallelism and finally express that formally via OpenACC syntax. What this post is really about is about the analysis of a simple program, which is hopefully a little less trivial than the Jacobi type examples all over the net. Also, this is not one of those _100X in 2 hours_ posts, because that does not always happen.
 
+## Setup
 First off, some logistics about tool installation and setup.
 
 * We will be using the PGI Compiler today, which you can get from the [PGroup's site](http://www.pgroup.com/support/download_pgi2016.php?view=current)  
@@ -39,6 +40,8 @@ pgcc 15.10-0 64-bit target on x86-64 Windows -tp haswell
 The Portland Group - PGI Compilers and Tools
 Copyright (c) 2015, NVIDIA CORPORATION.  All rights reserved.
 ```
+
+## The target
 
 Now, onto our target today - a subroutine that converts a hexadecimal string to base64. I picked this up from the [matasano cryptography challenges](http://cryptopals.com/) I'm attempting on the side and decided it'd be a good example for this tutorial.
 
