@@ -9,7 +9,7 @@
   <meta name="author" content="kmmankad">
 
   
-  <meta name="description" content="This is a post about various available resources, and how you could go about becoming a real CUDA pro. This post isn&rsquo;t about convincing you &hellip;">
+  <meta name="description" content="Whats OpenACC? From http://developer.nvidia.com/openacc: OpenACC is a directive-based programming model designed to provide a simple yet powerful &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -85,6 +85,182 @@
     <div id="content">
       <div class="blog-index">
   
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/04/03/openacc-analyze/">OpenACC: Analyze, Express, Tweak!</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-03T11:22:49+05:30'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>3</span><span class='date-suffix'>rd</span>, <span class='date-year'>2016</span></span> <span class='time'>11:22 am</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><h2>Whats OpenACC?</h2>
+
+<p>From <a href="http://developer.nvidia.com/openacc">http://developer.nvidia.com/openacc</a>:</p>
+
+<blockquote><p>OpenACC is a directive-based programming model designed to provide a simple yet powerful approach to accelerators without significant programming effort.</p></blockquote>
+
+<p>What that is means is, you can pickup existing code written for an x86 CPU, and add some compiler <code>#pragmas</code>, compile with an OpenACC capable compiler - and voila! You get accelerated binaries for a range of hardware accelerators - Nvidia GPUs, AMD GPUs and even Intel multi-core CPUs. Thats really the USP of OpenACC - a single copy of the source code will deliver performance portability across this range of hardware platforms.
+So, to be successful with OpenACC all you need are strong concepts in parallel programming, some know-how about OpenACC syntax and you’re good to go! You dont need to really know too many lower level hardware details with OpenACC, as opposed to, maybe CUDA C. However, this is a double edged sword - I will revisit this later in this post.</p>
+
+<p>There are some really good tutorials on OpenACC itself available online:<br/>
+1. <a href="https://devblogs.nvidia.com/parallelforall/getting-started-openacc/">Jeff Larkin&rsquo;s post on the Parallel Forall blog</a><br/>
+2. Jeff Larkin&rsquo;s sessions from GTC 2013 - recordings on Youtube here : <a href="https://www.youtube.com/watch?v=0e5TiwZd_wE">Part1</a> <a href="https://www.youtube.com/watch?v=YueszvniRUE">Part2</a></p>
+
+<p>The recommended approach for parallelism anywhere is to:<br/>
+1. Try and use existing parallel optimized libraries like cuBLAS, cuDNN etc. if they exist for your application.<br/>
+2. If you dont get those, try OpenACC on your code. That should get you about 80% of the maximum available performance.<br/>
+<em>Ofcourse, that is a very rough number and is subject to, you guessed it, your code and the GPU hardware you&rsquo;re running.</em>
+3. Roll your own CUDA kernels. This is definitely the most involved of the 3 options, but it will allow you to squeeze
+every last drop of that good perf juice from your software and hardware.</p>
+
+<p>OpenACC tutorials online often use the Jacobi Iteration/sAXPY example to demonstrate OpenACC, but all that those examples teach us are syntax constructs. However, if you use OpenACC in the real world, you’ll know it&rsquo;s all about how you analyze your source code, understand its scope for parallelism and finally express that formally via OpenACC syntax. What this post is really about is about the analysis of a simple program, which is hopefully a little less trivial than the Jacobi type examples all over the net.</p>
+
+<p>First off, some logistics about tool installation and setup.</p>
+
+<ul>
+<li>We will be using the PGI Compiler today, which you can get from the <a href="http://www.pgroup.com/support/download_pgi2016.php?view=current">PGroup&rsquo;s site</a></li>
+<li>You can also download the <a href="https://developer.nvidia.com/openacc-toolkit">OpenACC toolkit from NVIDIA</a></li>
+</ul>
+
+
+<p>If you have everything correctly setup, try <code>pgcc --version</code> as shown below</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>PGI Workstation 15.10 <span class="o">(</span>64<span class="o">)</span>
+</span><span class='line'>PGI<span class="nv">$ </span>pgcc --version
+</span><span class='line'>
+</span><span class='line'>pgcc 15.10-0 64-bit target on x86-64 Windows -tp haswell
+</span><span class='line'>The Portland Group - PGI Compilers and Tools
+</span><span class='line'>Copyright <span class="o">(</span>c<span class="o">)</span> 2015, NVIDIA CORPORATION.  All rights reserved.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Now, onto our target today - a subroutine that converts a hexadecimal string to base64. I picked this up from the <a href="http://cryptopals.com/">matasano cryptography challenges</a> I&rsquo;m attempting on the side and decided it&rsquo;d be a good example for this tutorial.</p>
+
+<p>Heres a brief overview of the algorithm itself:
+1. Take 3 bytes of input hex data at a time,
+2. Do some bitwise concatenation (shift and OR) and get indexes of 4 base64 characters that these 3 bytes are encoded into
+3. Lookup the actual base64 characters using these indices.
+..and heres a quick diagram to explain that:</p>
+
+<p><img src="images/openacc/ASCII_to_b64.PNG" title="Figure 1: Hex to Base64" alt="Diagram showing Hex to Base64 conversion" /></p>
+</div>
+  
+  
+
+
+    </article>
+  
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2016/03/18/how-to-remap-dead-keys-in-ubuntu/">How to Remap Dead Keys in Ubuntu</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-03-18T19:14:32+05:30'><span class='date'><span class='date-month'>Mar</span> <span class='date-day'>18</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:14 pm</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>My personal computer is an old Lenovo G560, whose keyboard recently started showing signs of wear, with the double-quote/single-quote key being the first to give out. As someone who likes to write code, losing the quote key is a real inconvenience. Sure, I could spend some cash for a new keyboard, but what good is your knowledge in software if it can&rsquo;t help workaround hardware problems? :P</p>
+
+<p>So I decided to implement the lost key by re-mapping an existing key to behave like it. I chose the semicolon/colon key here. The idea is simple: I&rsquo;d remap the semicolon/colon key to print single and double quotes with key modifiers (Right Alt and Shift)</p>
+
+<p>Alt + Semicolon = Single Quote
+<img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Alt.png" width="50"> + <img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Colon_Semicolon.png" width="50"> = <img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Quotation_Marks.png" width="50"></p>
+
+<p>..and, Shift + Alt + Semicolon = Double Quote
+<img src="https://www.wpclipart.com/computer/keyboard_keys/large_keys/computer_key_Shift.png" width="120"> + <img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Alt.png" width="50"> + <img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Colon_Semicolon.png" width="50"> = <img src="https://www.wpclipart.com/computer/keyboard_keys/large_keys/computer_key_Shift.png" width="120"> + <img src="https://www.wpclipart.com/computer/keyboard_keys/computer_key_Quotation_Marks.png" width="50"></p>
+
+<p>To achieve this, what you need to do is create a custom keyboard layout. In Ubuntu, all the keyboard layouts (for different languages and such) are located at <code>/usr/share/X11/xkb/symbols/</code>. Now, you can chose to create a new file altogether, or add a variant to an existing file. I chose the latter, so I added the following lines to the US Keyboard layout located at <code>/usr/share/X11/xkb/symbols/us</code></p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'>partial alphanumeric_keys
+</span><span class='line'>xkb_symbols "kmmankad" {
+</span><span class='line'>     name[Group1] = "English (US, with apostrophe|quotedbl mapped to colon|semicolon";
+</span><span class='line'> 
+</span><span class='line'>     include "us(basic)"
+</span><span class='line'>     key &lt;AC10&gt; { [ semicolon,colon, apostrophe, quotedbl ] };
+</span><span class='line'> 
+</span><span class='line'>     include "level3(ralt_switch)"
+</span><span class='line'>};</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Here, I define a new keyboard layout named <code>kmmankad</code>, and its description is specified under <code>name[Group1]</code>. The <code>include "us(basic)"</code> line includes the basic US keyboard layout, since ours is really just one key away from the default US basic. Thats what the next line is about.</p>
+
+<figure class='code'><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class=''><span class='line'> key &lt;AC10&gt; { [ semicolon,colon, apostrophe, quotedbl ] };</span></code></pre></td></tr></table></div></figure>
+
+
+<p><code>AC10</code> - A (for alphanumeric). The second letter could take values from A-E (rows 1 to 5, <em>bottom to top</em> - rowA is the spacebar row) and 1-12 (key position in the row, going <em>left to right</em>). So with that co-ordinate system, we locate semicolon as <code>AC10</code>. After the key is defined, you the next four values will correspond with what the key will produce by itself, with Shift, with AltGr (usually the right Alt key), and Shift+AltGr respectively. Easy peasy.</p>
+
+<p>Now that we have this defined, We need to update <code>/usr/share/X11/xkb/rules/evdev.xml</code> to include this new layout.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+</pre></td><td class='code'><pre><code class='xml'><span class='line'>    <span class="nt">&lt;variant&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;configItem&gt;</span>
+</span><span class='line'>        <span class="nt">&lt;name&gt;</span>kmmankad<span class="nt">&lt;/name&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;description&gt;</span>English (US, with apostrophe|quotedbl mapped to colon|semicolon)<span class="nt">&lt;/description&gt;</span>
+</span><span class='line'>      <span class="nt">&lt;/configItem&gt;</span>
+</span><span class='line'>    <span class="nt">&lt;/variant&gt;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Note that the name and description should match what you entered earlier in <code>/usr/share/X11/xkb/symbols/us</code>.</p>
+
+<p>Now, restart your machine and you should have your new keyboard layout available under <code>System Settings</code> -> <code>Keyboard</code> -> <code>Text Entry</code> (see bottom right) -> <code>+</code></p>
+
+<p>Select, Test and Done. Hope this was helpful!</p>
+</div>
+  
+  
+
+
+    </article>
   
   
     <article>

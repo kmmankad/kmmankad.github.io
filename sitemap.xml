@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://kmmankad.github.io/blog/2016/04/03/openacc-analyze/</loc>
+    <lastmod>2016-04-03T11:22:49+05:30</lastmod>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/2016/03/18/how-to-remap-dead-keys-in-ubuntu/</loc>
+    <lastmod>2016-03-18T19:14:32+05:30</lastmod>
+  </url>
+  <url>
     <loc>http://kmmankad.github.io/blog/2016/02/29/so-you-want-to-cuda/</loc>
     <lastmod>2016-02-29T19:12:59+05:30</lastmod>
   </url>
@@ -29,5 +37,11 @@
   </url>
   <url>
     <loc>http://kmmankad.github.io/blog/categories/cuda/</loc>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/categories/openacc/</loc>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/categories/parallel/</loc>
   </url>
 </urlset>
