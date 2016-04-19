@@ -1,0 +1,393 @@
+
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>OpenACC: View Generated CUDA Code - Curious Explorations</title>
+  <meta name="author" content="kmmankad">
+
+  
+  <meta name="description" content="This is going to be a short post on how one can view the actual compiler generated CUDA code when running OpenACC on NVIDIA hardware. It is a warmup &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="Curious Explorations" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="/javascripts/libs/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="//fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" type="text/css">
+<link href="//fonts.googleapis.com/css?family=Fjalla+One" rel="stylesheet" type="text/css">
+<!--- MathJax Configuration -->
+<script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">Curious Explorations</a></h1>
+  
+    <h2>A hardware/software hacker's (b)log.</h2>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscribe" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS" target="_blank"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="25" height="25" viewbox="0 0 100 100"><path class="social" d="M 13.310204,73.332654 C 5.967347,73.332654 0,79.322448 0,86.621428 c 0,7.338776 5.967347,13.262246 13.310204,13.262246 7.370408,0 13.328572,-5.92245 13.328572,-13.262246 0,-7.29898 -5.958164,-13.288774 -13.328572,-13.288774 z M 0.01530612,33.978572 V 53.143878 C 12.493878,53.143878 24.229592,58.02347 33.068368,66.865306 41.894898,75.685714 46.767346,87.47449 46.767346,100 h 19.25 C 66.017346,63.592858 36.4,33.979592 0.01530612,33.978572 l 0,0 z M 0.03877552,0 V 19.17449 C 44.54796,19.17551 80.77551,55.437756 80.77551,100 H 100 C 100,44.87653 55.15102,0 0.03877552,0 z"></path></svg></a></li>
+  
+</ul>
+  
+  
+  
+  
+  
+<ul class="subscribe">
+  <li><a href="https://github.com/kmmankad" rel="subscribe-github" title="@kmmankad on GitHub" target="_blank"><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="25" height="25" viewbox="0 0 100 100"><path class="social" d="M 50,0 C 22.385714,0 0,22.385714 0,50 0,77.614286 22.385714,100 50,100 77.614286,100 100,77.614286 100,50 100,22.385714 77.614286,0 50,0 z m 29.692858,79.692858 c -3.859184,3.859182 -8.351022,6.887754 -13.35,9.00306 -1.27041,0.536736 -2.560204,1.009184 -3.867348,1.415306 v -7.493878 c 0,-3.938774 -1.35102,-6.835714 -4.053062,-8.690816 1.692858,-0.163264 3.24694,-0.390816 4.663266,-0.683672 1.416326,-0.292858 2.913266,-0.716328 4.491838,-1.27041 1.57857,-0.55408 2.994896,-1.213264 4.247958,-1.97755 1.253062,-0.765306 2.458164,-1.758164 3.613266,-2.978572 1.155102,-1.220408 2.12449,-2.604082 2.905102,-4.15 0.780612,-1.545918 1.4,-3.40204 1.855102,-5.566326 0.455102,-2.164286 0.683674,-4.54898 0.683674,-7.153062 0,-5.045918 -1.643878,-9.341836 -4.931634,-12.890816 C 77.44796,33.35 77.285714,29.10204 75.463266,24.512244 l -1.22143,-0.145918 c -0.845918,-0.09796 -2.368366,0.260204 -4.565306,1.07449 -2.196938,0.814286 -4.663264,2.14796 -7.396938,4.004082 -3.87449,-1.07449 -7.893878,-1.611224 -12.061224,-1.611224 -4.19898,0 -8.203062,0.536734 -12.012246,1.611224 -1.72449,-1.17245 -3.361224,-2.139796 -4.907142,-2.905102 C 31.753062,25.77449 30.516326,25.254082 29.587756,24.97653 28.660204,24.7 27.79796,24.528572 27,24.463266 c -0.79796,-0.0653 -1.310204,-0.08062 -1.537756,-0.04898 -0.22755,0.03164 -0.390816,0.0653 -0.487754,0.09796 -1.82347,4.62245 -1.985714,8.87143 -0.487756,12.743878 -3.287754,3.54796 -4.931632,7.844898 -4.931632,12.890816 0,2.604082 0.227552,4.988776 0.683674,7.153062 0.456122,2.164286 1.07449,4.020408 1.855102,5.566326 0.780612,1.545918 1.75,2.929592 2.905102,4.15 1.155102,1.220408 2.360204,2.213266 3.613264,2.978572 1.253062,0.766326 2.669388,1.42449 4.24796,1.97755 1.578572,0.554082 3.07551,0.976532 4.491836,1.27041 1.416328,0.292856 2.970408,0.521428 4.663266,0.683672 -2.669388,1.82347 -4.004082,4.720408 -4.004082,8.690816 v 7.639796 C 36.536734,89.818368 35.083674,89.3 33.656122,88.695918 c -4.99898,-2.115306 -9.490816,-5.143878 -13.35,-9.00306 -3.859184,-3.859184 -6.887754,-8.351022 -9.00306,-13.35 C 9.1163263,61.171428 8.0071428,55.67347 8.0071428,50 c 0,-5.67347 1.1091835,-11.171428 3.2969392,-16.342858 2.115306,-4.998978 5.143878,-9.490816 9.00306,-13.35 3.859184,-3.859182 8.351022,-6.887754 13.35,-9.00306 C 38.828572,9.1163266 44.32653,8.0071428 50,8.0071428 c 5.67347,0 11.171428,1.1091838 16.342858,3.2969392 5,2.115306 9.490816,5.143878 13.35,9.00306 3.859182,3.859184 6.887754,8.351022 9.00306,13.35 2.186736,5.17245 3.295918,10.67041 3.295918,16.342858 0,5.672448 -1.109182,11.171428 -3.296938,16.342858 -2.115306,4.998978 -5.143878,9.490816 -9.00204,13.35 l 0,0 z"></path></svg></a></li>
+</ul>
+  
+  
+  
+  
+  
+  
+  
+  
+    
+      <form action="https://www.google.com/search" method="get">
+        <fieldset role="search">
+          <input type="hidden" name="sitesearch" value="kmmankad.github.io" />
+    
+          <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+        </fieldset>
+      </form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+  <li><a href="/about">About Me</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      
+        <h1 class="entry-title">OpenACC: View Generated CUDA Code</h1>
+      
+    
+    
+      <p class="meta">
+        
+
+
+
+
+<time class='entry-date' datetime='2016-04-19T07:27:14+05:30'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:27 am</span></time>
+        
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>This is going to be a short post on how one can view the actual compiler generated CUDA code when running OpenACC on NVIDIA hardware. It is a warmup to my upcoming post on where-data-goes-with-OpenACC&rsquo;s-various-data-directives.</p>
+
+<p>When compiling a OpenACC accelerated program, heres what a canonical compile command would look like for the <a href="http://www.pgroup.com/resources/cuda-x86.htm">PGI compiler</a></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>pgcc -I. -g -fast -Minfo -acc -ta<span class="o">=</span>nvidia -o hex2base64.exe hex2base64.c main.c
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>(Yes, this is from my <a href="http://kmmankad.github.io/blog/2016/04/03/openacc-analyze/">first OpenACC tutorial</a>)</p>
+
+<p>With these set of options, the intermediate PTX or CUDA code is not visible to the user. However, if we add <code>keepgpu,nollvm</code> to the <code>-ta=nvidia</code> option, then the compiler dumps those for us to see. With only <code>keepgpu</code>, you would get only the PTX source code and binaries.</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>pgcc -I. -g -fast -Minfo -acc -ta<span class="o">=</span>nvidia:keepgpu,nollvm -o hex2base64.exe hex2ba se64.c main.c
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>With this, ordinary OpenACC&rsquo;d code like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">encode_block</span><span class="p">(</span> <span class="kt">char</span> <span class="o">*</span><span class="n">input</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">,</span> <span class="kt">char</span> <span class="o">*</span><span class="n">output</span><span class="p">){</span>
+</span><span class='line'>       <span class="c1">// ....shortened for brevity....</span>
+</span><span class='line'>  <span class="cp">#pragma acc data present(input[0:size]), present(base64_LUT[64]), copyout(output[0:4*size/3])</span>
+</span><span class='line'>  <span class="cp">#pragma acc kernels </span>
+</span><span class='line'>  <span class="cp">#pragma acc loop private(decoded_octets, k)</span>
+</span><span class='line'>  <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">){</span>
+</span><span class='line'>      <span class="c1">// Calculate the output array position based</span>
+</span><span class='line'>      <span class="c1">// on the input array position (loop iteration)</span>
+</span><span class='line'>      <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="o">*</span><span class="n">i</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="p">;</span>
+</span><span class='line'>      
+</span><span class='line'>      <span class="n">decoded_octets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'>      <span class="n">output</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64_LUT</span><span class="p">[</span><span class="n">decoded_octets</span><span class="p">[</span><span class="mi">0</span><span class="p">]];</span>
+</span><span class='line'>       <span class="c1">// ....shortened for brevity....</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Would generate an intermediate file that looks like this:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include &quot;cuda_runtime.h&quot;</span>
+</span><span class='line'><span class="cp">#include &quot;pgi_cuda_runtime.h&quot;</span>
+</span><span class='line'><span class="cp">#include &quot;hex2base64.n001.h&quot;</span>
+</span><span class='line'>  <span class="k">extern</span> <span class="s">&quot;C&quot;</span> <span class="n">__global__</span> <span class="n">__launch_bounds__</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="kt">void</span>
+</span><span class='line'><span class="n">encode_block_92_gpu</span><span class="p">(</span>
+</span><span class='line'>      <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">tc1</span><span class="p">,</span>
+</span><span class='line'>      <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">p3</span><span class="cm">/* input */</span><span class="p">,</span>
+</span><span class='line'>      <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">p4</span><span class="cm">/* decoded_octets */</span><span class="p">,</span>
+</span><span class='line'>      <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">p5</span><span class="cm">/* base64_LUT */</span><span class="p">,</span>
+</span><span class='line'>      <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">p6</span><span class="cm">/* output */</span><span class="p">,</span>
+</span><span class='line'>      <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x5</span><span class="cm">/* size */</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>  <span class="kt">int</span> <span class="n">_i_1</span><span class="p">,</span> <span class="n">_i_2</span><span class="p">,</span> <span class="n">_i_3</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">_ui_1</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">_p_1</span><span class="p">,</span> <span class="o">*</span><span class="n">_p_2</span><span class="p">,</span> <span class="o">*</span><span class="n">_p_3</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x6</span><span class="cm">/* k */</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i25s</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i26i</span><span class="p">;</span>
+</span><span class='line'>  <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">p27</span><span class="cm">/* decoded_octets */</span><span class="p">;</span>
+</span><span class='line'>  <span class="n">i25s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="nl">_BB_8</span><span class="p">:</span> <span class="p">;</span>
+</span><span class='line'>       <span class="n">i26i</span> <span class="o">=</span> <span class="p">((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">));</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="n">_BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i26i</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="n">_BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="n">p27</span><span class="cm">/* decoded_octets */</span> <span class="o">=</span> <span class="p">(</span><span class="n">p4</span><span class="cm">/* decoded_octets */</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)(((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="mi">4</span><span class="p">)));</span>
+</span><span class='line'>       <span class="n">_ui_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i26i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span><span class='line'>       <span class="c1">// ....shortened for brevity....</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>While this is legal CUDA code, its quite cluttered. With a neato perl oneliner, we can get that a bit cleaner and easier to read:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+</pre></td><td class='code'><pre><code class='sh'><span class='line'>perl -pe <span class="s1">&#39;s/\w\d\/\*\s(\w+)\s\*\//$1/g&#39;</span> cluttered_openacc_cuda_code.c
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Code is now:</p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="cp">#include &quot;cuda_runtime.h&quot;</span>
+</span><span class='line'><span class="cp">#include &quot;pgi_cuda_runtime.h&quot;</span>
+</span><span class='line'><span class="cp">#include &quot;hex2base64.n001.h&quot;</span>
+</span><span class='line'><span class="k">extern</span> <span class="s">&quot;C&quot;</span> <span class="n">__global__</span> <span class="n">__launch_bounds__</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="kt">void</span>
+</span><span class='line'><span class="n">encode_block_92_gpu</span><span class="p">(</span>
+</span><span class='line'>        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">tc1</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">input</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">decoded_octets</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">__restrict__</span> <span class="n">base64_LUT</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">output</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="n">_i_1</span><span class="p">,</span> <span class="n">_i_2</span><span class="p">,</span> <span class="n">_i_3</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">_ui_1</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">_p_1</span><span class="p">,</span> <span class="o">*</span><span class="n">_p_2</span><span class="p">,</span> <span class="o">*</span><span class="n">_p_3</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">k</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i25s</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i26i</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span> <span class="n">decoded_octets</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">i25s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="nl">_BB_8</span><span class="p">:</span> <span class="p">;</span>
+</span><span class='line'>       <span class="n">i26i</span> <span class="o">=</span> <span class="p">((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">));</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="n">_BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i26i</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="n">_BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="n">decoded_octets</span> <span class="o">=</span> <span class="p">(</span><span class="n">decoded_octets</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)(((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">*</span><span class="p">(</span><span class="mi">4</span><span class="p">)));</span>
+</span><span class='line'>       <span class="n">_ui_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i26i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span><span class='line'>       <span class="n">k</span> <span class="o">=</span> <span class="p">((</span><span class="n">_ui_1</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">4</span><span class="p">))</span><span class="o">/</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span><span class='line'>       <span class="n">_p_1</span> <span class="o">=</span> <span class="p">(</span><span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span><span class="n">input</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)(</span><span class="n">_ui_1</span><span class="p">)));</span>
+</span><span class='line'>       <span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">decoded_octets</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">_p_1</span><span class="p">))</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="mi">2</span><span class="p">);</span>
+</span><span class='line'>       <span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span><span class="n">output</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)(</span><span class="n">k</span><span class="p">)))</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span><span class="n">base64_LUT</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)((</span><span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">decoded_octets</span><span class="p">))))));</span>
+</span><span class='line'>       <span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span><span class="n">decoded_octets</span><span class="p">)</span><span class="o">+</span><span class="p">(</span><span class="mi">1LL</span><span class="p">))</span> <span class="o">=</span> <span class="p">((</span><span class="o">*</span><span class="p">(</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)((</span> <span class="kt">signed</span> <span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">_p_1</span><span class="p">))</span><span class="o">&amp;</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span><span class="o">&lt;&lt;</span><span class="p">(</span><span class="mi">4</span><span class="p">);</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(((</span><span class="kt">int</span><span class="p">)(</span><span class="n">_ui_1</span><span class="p">))</span><span class="o">+</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">size</span><span class="p">)))</span>  <span class="k">goto</span> <span class="n">_BB_22</span><span class="p">;</span>
+</span><span class='line'>       <span class="n">_ui_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i26i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span><span class='line'>       <span class="c1">// ....shortened for brevity....</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p>Much better.</p>
+
+<p>Thats it! Hope this (and my next OpenACC post <code>TODO:insert link</code> ) helps you guys.</p>
+
+<p>PS: I wonder if a screencast is a better medium for my (b)log.</p>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
+  
+
+
+
+  <span class="byline author vcard">Authored by <span class="fn">
+  
+    kmmankad
+  
+  </span></span>
+
+
+      
+
+
+
+
+<time class='entry-date' datetime='2016-04-19T07:27:14+05:30'><span class='date'><span class='date-month'>Apr</span> <span class='date-day'>19</span><span class='date-suffix'>th</span>, <span class='date-year'>2016</span></span> <span class='time'>7:27 am</span></time>
+      
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/cuda/'>cuda,</a>, <a class='category' href='/blog/categories/openacc/'>openacc</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="//twitter.com/share" class="twitter-share-button" data-url="http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code/" data-via="" data-counturl="http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+        <a class="basic-alignment left" href="/blog/2016/04/14/performance-prediction-of-cuda-kernels/" title="Previous Post: Performance Prediction of CUDA kernels">&laquo; Performance Prediction of CUDA kernels</a>
+      
+      
+    </p>
+  </footer>
+</article>
+
+
+</div>
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2016 - kmmankad -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a> | Themed with <a href="https://github.com/lucaslew/whitespace">Whitespace</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = '//platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

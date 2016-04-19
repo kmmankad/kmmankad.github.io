@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[Category: Cuda | Curious Explorations]]></title>
+  <title><![CDATA[Category: Cuda, | Curious Explorations]]></title>
   <link href="http://kmmankad.github.io/blog/categories/cuda/atom.xml" rel="self"/>
   <link href="http://kmmankad.github.io/"/>
-  <updated>2016-04-19T07:25:04+05:30</updated>
+  <updated>2016-04-19T07:59:23+05:30</updated>
   <id>http://kmmankad.github.io/</id>
   <author>
     <name><![CDATA[kmmankad]]></name>
@@ -14,325 +14,177 @@
 
   
   <entry>
-    <title type="html"><![CDATA[OpenACC: Analyze, Express, Tweak! - Part 1]]></title>
-    <link href="http://kmmankad.github.io/blog/2016/04/03/openacc-analyze/"/>
-    <updated>2016-04-03T11:22:49+05:30</updated>
-    <id>http://kmmankad.github.io/blog/2016/04/03/openacc-analyze</id>
-    <content type="html"><![CDATA[<h2>Whats OpenACC?</h2>
+    <title type="html"><![CDATA[OpenACC: View Generated CUDA Code]]></title>
+    <link href="http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code/"/>
+    <updated>2016-04-19T07:27:14+05:30</updated>
+    <id>http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code</id>
+    <content type="html"><![CDATA[<p>This is going to be a short post on how one can view the actual compiler generated CUDA code when running OpenACC on NVIDIA hardware. It is a warmup to my upcoming post on where-data-goes-with-OpenACC&rsquo;s-various-data-directives.</p>
 
-<p>From <a href="http://developer.nvidia.com/openacc">http://developer.nvidia.com/openacc</a>:</p>
+<p>When compiling a OpenACC accelerated program, heres what a canonical compile command would look like for the <a href="http://www.pgroup.com/resources/cuda-x86.htm">PGI compiler</a></p>
 
-<blockquote><p>OpenACC is a directive-based programming model designed to provide a simple yet powerful approach to accelerators without significant programming effort.</p></blockquote>
+<pre><code class="sh">pgcc -I. -g -fast -Minfo -acc -ta=nvidia -o hex2base64.exe hex2base64.c main.c
+</code></pre>
 
-<p>What that is means is, you can pickup existing code written for an x86 CPU, and add some compiler <code>#pragmas</code>, compile with an OpenACC capable compiler - and voila! You get accelerated binaries for a range of hardware accelerators - Nvidia GPUs, AMD GPUs and even Intel multi-core CPUs. Thats really the USP of OpenACC - a single copy of the source code will deliver performance portability across this range of hardware platforms.
-So, to be successful with OpenACC all you need are strong concepts in parallel programming, some know-how about OpenACC syntax and you’re good to go! You dont need to really know too many lower level hardware details with OpenACC, as opposed to, maybe CUDA C. However, this is a double edged sword - I will revisit this later in this post. Remember, OpenACC is about expressing parallelism - its not GPU programming.</p>
+<p>(Yes, this is from my <a href="http://kmmankad.github.io/blog/2016/04/03/openacc-analyze/">first OpenACC tutorial</a>)</p>
 
-<p>There are some really good tutorials on OpenACC itself available online:<br/>
-1. <a href="https://devblogs.nvidia.com/parallelforall/getting-started-openacc/">Jeff Larkin&rsquo;s post on the Parallel Forall blog</a><br/>
-2. Jeff Larkin&rsquo;s sessions from GTC 2013 - recordings on Youtube here : <a href="https://www.youtube.com/watch?v=0e5TiwZd_wE">Part1</a> <a href="https://www.youtube.com/watch?v=YueszvniRUE">Part2</a></p>
+<p>With these set of options, the intermediate PTX or CUDA code is not visible to the user. However, if we add <code>keepgpu,nollvm</code> to the <code>-ta=nvidia</code> option, then the compiler dumps those for us to see. With only <code>keepgpu</code>, you would get only the PTX source code and binaries.</p>
 
-<p>The recommended approach for parallelism anywhere is to:<br/>
-1. Try and use existing parallel optimized libraries like cuBLAS, cuDNN etc. if they exist for your application.<br/>
-2. If you dont get those, try OpenACC on your code. That should get you about 80% of the maximum available performance.<br/>
-<em>Ofcourse, that is a very rough number and is subject to, you guessed it, your code and the GPU hardware you&rsquo;re running.</em>
-3. Roll your own CUDA kernels. This is definitely the most involved of the 3 options, but it will allow you to squeeze
-every last drop of that good perf juice from your software and hardware.</p>
+<pre><code class="sh">pgcc -I. -g -fast -Minfo -acc -ta=nvidia:keepgpu,nollvm -o hex2base64.exe hex2ba se64.c main.c
+</code></pre>
 
-<p>OpenACC tutorials online often use the Jacobi Iteration/sAXPY example to demonstrate OpenACC, but all that those examples teach us are syntax constructs. However, if you use OpenACC in the real world, you’ll know it&rsquo;s all about how you analyze your source code, understand its scope for parallelism and finally express that formally via OpenACC syntax. What this post is really about is about the analysis of a simple program, which is hopefully a little less trivial than the Jacobi type examples all over the net. Also, this is not one of those <em>100X in 2 hours</em> posts, because that does not always happen.</p>
-
-<h2>Setup</h2>
-
-<p>First off, some logistics about tool installation and setup.</p>
-
-<ul>
-<li>We will be using the PGI Compiler today, which you can get from the <a href="http://www.pgroup.com/support/download_pgi2016.php?view=current">PGroup&rsquo;s site</a></li>
-<li>You can also download the <a href="https://developer.nvidia.com/openacc-toolkit">OpenACC toolkit from NVIDIA</a></li>
-</ul>
-
-
-<p>If you have everything correctly setup, try <code>pgcc --version</code> as shown below
+<p>With this, ordinary OpenACC&rsquo;d code like this:
 <figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
 <span class='line-number'>2</span>
 <span class='line-number'>3</span>
 <span class='line-number'>4</span>
 <span class='line-number'>5</span>
 <span class='line-number'>6</span>
-</pre></td><td class='code'><pre><code class='sh'><span class='line'>PGI Workstation 15.10 <span class="o">(</span>64<span class="o">)</span>
-</span><span class='line'>PGI<span class="nv">$ </span>pgcc <span class="p">&amp;</span>ndash<span class="p">;</span>version&lt;/p&gt;
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+<span class='line-number'>25</span>
+<span class='line-number'>26</span>
+<span class='line-number'>27</span>
+<span class='line-number'>28</span>
+<span class='line-number'>29</span>
+<span class='line-number'>30</span>
+<span class='line-number'>31</span>
+<span class='line-number'>32</span>
+<span class='line-number'>33</span>
+<span class='line-number'>34</span>
+<span class='line-number'>35</span>
+<span class='line-number'>36</span>
+<span class='line-number'>37</span>
+<span class='line-number'>38</span>
+<span class='line-number'>39</span>
+<span class='line-number'>40</span>
+<span class='line-number'>41</span>
+<span class='line-number'>42</span>
+<span class='line-number'>43</span>
+<span class='line-number'>44</span>
+<span class='line-number'>45</span>
+<span class='line-number'>46</span>
+<span class='line-number'>47</span>
+<span class='line-number'>48</span>
+<span class='line-number'>49</span>
+<span class='line-number'>50</span>
+<span class='line-number'>51</span>
+</pre></td><td class='code'><pre><code class='c++'><span class='line'><span class="kt">unsigned</span> <span class="kt">int</span> <span class="nf">encode_block</span><span class="p">(</span> <span class="kt">char</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">input</span><span class="p">,</span> <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">size</span><span class="p">,</span> <span class="kt">char</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">output</span><span class="p">){</span>
+</span><span class='line'>       <span class="c1">// &amp;hellip;.shortened for brevity&amp;hellip;.</span>
+</span><span class='line'>    <span class="cp">#pragma acc data present(input[0:size]), present(base64_LUT[64]), copyout(output[0:4&lt;em&gt;size/3])</span>
+</span><span class='line'>    <span class="cp">#pragma acc kernels</span>
+</span><span class='line'>    <span class="cp">#pragma acc loop private(decoded_octets, k)</span>
+</span><span class='line'>    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&amp;</span><span class="n">lt</span><span class="p">;</span><span class="n">size</span><span class="p">;</span> <span class="n">i</span><span class="o">=</span><span class="n">i</span><span class="o">+</span><span class="mi">3</span><span class="p">){</span>
+</span><span class='line'>        <span class="c1">// Calculate the output array position based</span>
+</span><span class='line'>        <span class="c1">// on the input array position (loop iteration)</span>
+</span><span class='line'>        <span class="n">k</span> <span class="o">=</span> <span class="p">(</span><span class="mi">4</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">i</span><span class="p">)</span><span class="o">/</span><span class="mi">3</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">p</span><span class="o">&gt;</span>
 </span><span class='line'>
-</span><span class='line'>&lt;p&gt;pgcc 15.10-0 64-bit target on x86-64 Windows -tp haswell
-</span><span class='line'>The Portland Group - PGI Compilers and Tools
-</span><span class='line'>Copyright <span class="p">&amp;</span>copy<span class="p">;</span> 2015, NVIDIA CORPORATION.  All rights reserved.
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>    <span class="n">decoded_octets</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span><span class="o">&amp;</span><span class="n">gt</span><span class="p">;</span> <span class="mi">2</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">output</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">base64_LUT</span><span class="p">[</span><span class="n">decoded_octets</span><span class="p">[</span><span class="mi">0</span><span class="p">]];</span>
+</span><span class='line'>   <span class="c1">// ....shortened for brevity....</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span>
+</span><span class='line'><span class="n">Would</span> <span class="n">generate</span> <span class="n">an</span> <span class="n">intermediate</span> <span class="n">file</span> <span class="n">that</span> <span class="n">looks</span> <span class="n">like</span> <span class="k">this</span><span class="o">:</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">include</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">cuda_runtime</span><span class="p">.</span><span class="n">h</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">include</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">pgi_cuda_runtime</span><span class="p">.</span><span class="n">h</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">h1</span><span class="o">&gt;</span><span class="n">include</span> <span class="o">&amp;</span><span class="n">ldquo</span><span class="p">;</span><span class="n">hex2base64</span><span class="p">.</span><span class="n">n001</span><span class="p">.</span><span class="n">h</span><span class="o">&amp;</span><span class="n">rdquo</span><span class="p">;</span><span class="o">&lt;/</span><span class="n">h1</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">pre</span><span class="o">&gt;&lt;</span><span class="n">code</span><span class="o">&gt;</span><span class="k">extern</span> <span class="s">&quot;C&quot;</span> <span class="n">__global__</span> <span class="n">__launch_bounds__</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span> <span class="kt">void</span>
+</span><span class='line'><span class="o">&lt;/</span><span class="n">code</span><span class="o">&gt;&lt;/</span><span class="n">pre</span><span class="o">&gt;</span>
+</span><span class='line'>
+</span><span class='line'><span class="o">&lt;</span><span class="n">p</span><span class="o">&gt;</span><span class="n">encode_block_92_gpu</span><span class="p">(</span>
+</span><span class='line'>        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">tc1</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="k">restrict</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;</span> <span class="n">p3</span><span class="o">/&lt;/</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">input</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="k">restrict</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;</span> <span class="n">p4</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">decoded_octets</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="n">strong</span><span class="o">&gt;</span><span class="k">restrict</span><span class="o">&lt;/</span><span class="n">strong</span><span class="o">&gt;</span> <span class="n">p5</span><span class="o">/&lt;/</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">base64_LUT</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">p6</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">output</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">,</span>
+</span><span class='line'>        <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x5</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">size</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">)</span>
+</span><span class='line'><span class="p">{</span>
+</span><span class='line'>    <span class="kt">int</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">i_1</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">i_2</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">i_3</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">ui_1</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">_p_1</span><span class="p">,</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">p_2</span><span class="p">,</span> <span class="o">*&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">p_3</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">x6</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">k</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i25s</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">i26i</span><span class="p">;</span>
+</span><span class='line'>    <span class="kt">signed</span> <span class="kt">char</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">p27</span><span class="o">/&lt;/</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">decoded_octets</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">;</span>
+</span><span class='line'>    <span class="n">i25s</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+</span><span class='line'><span class="nl">_BB_8</span><span class="p">:</span> <span class="p">;</span>
+</span><span class='line'>       <span class="n">i26i</span> <span class="o">=</span> <span class="p">((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">));</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i25s</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="n">BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="k">if</span><span class="p">(</span> <span class="p">((</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">i26i</span><span class="p">)</span><span class="o">&gt;=</span><span class="p">(</span><span class="kt">unsigned</span> <span class="kt">int</span><span class="p">)(</span><span class="n">tc1</span><span class="p">)))</span>  <span class="k">goto</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="n">BB_9</span><span class="p">;</span>
+</span><span class='line'>       <span class="n">p27</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">decoded_octets</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span> <span class="o">=</span> <span class="p">(</span><span class="n">p4</span><span class="o">/&lt;</span><span class="n">em</span><span class="o">&gt;</span> <span class="n">decoded_octets</span> <span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;/</span><span class="p">)</span><span class="o">+</span><span class="p">((</span><span class="kt">long</span> <span class="kt">long</span><span class="p">)(((((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">&lt;</span><span class="n">em</span><span class="o">&gt;</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">blockDim</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">+</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">))</span><span class="o">&lt;/</span><span class="n">em</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">4</span><span class="p">)));</span>
+</span><span class='line'>       <span class="n">_ui_1</span> <span class="o">=</span> <span class="p">(</span><span class="n">i26i</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">3</span><span class="p">);</span>
+</span><span class='line'>       <span class="c1">// &amp;hellip;.shortened for brevity&amp;hellip;.</span>
 </span></code></pre></td></tr></table></div></figure></p>
 
-<h2>The target</h2>
+<p>While this is legal CUDA code, its quite cluttered. With a neato perl oneliner, we can get that a bit cleaner and easier to read:</p>
 
-<p>Now, onto our target today - a subroutine that converts a hexadecimal string to base64. I picked this up from the <a href="http://cryptopals.com/">matasano cryptography challenges</a> I&rsquo;m attempting on the side and decided it&rsquo;d be a good example for this tutorial.</p>
-
-<p>Heres a brief overview of the algorithm itself:<br/>
-1. Take 3 bytes of input hex data at a time,<br/>
-2. Do some bitwise concatenation (shift and OR) and get indexes of 4 base64 characters that these 3 bytes are encoded into<br/>
-3. Lookup the actual base64 characters using these indices.<br/>
-..and heres a quick diagram to explain that:</p>
-
-<p><img src="https://github.com/kmmankad/kmmankad.github.io/raw/master/images/openacc/ASCII_to_b64.PNG" title="Figure 1: Hex to Base64" alt="Diagram showing Hex to Base64 conversion" /></p>
-
-<p>Lets look at what we&rsquo;ll start here:
-```c++
-unsigned int encode_block( char<em> input, unsigned int size, char</em> output){</p>
-
-<pre><code>char decoded_octets[4];
-unsigned int i,j=0;
-
-for (i=0; i&lt;size; i=i+3){
-    decoded_octets[0] = input[i] &gt;&gt; 2;
-    output[j++] = base64_LUT[decoded_octets[0]];
-    decoded_octets[1] = (input[i] &amp; 0x03) &lt;&lt; 4;
-    if (i+1 &lt; size){
-        decoded_octets[1] |= ((input[i+1] &amp; 0xF0) &gt;&gt; 4);
-        output[j++] = base64_LUT[decoded_octets[1]];
-
-        decoded_octets[2] = ((input[i+1] &amp; 0x0F) &lt;&lt; 2);
-        // Check if we have an (i+2)th input element
-        if (i+2 &lt; size){
-            decoded_octets[2] |= ((input[i+2] &amp; 0xC0) &gt;&gt; 6);
-            output[j++] = base64_LUT[decoded_octets[2]];
-
-            decoded_octets[3] = input[i+2] &amp; 0x3F;
-            output[j++] = base64_LUT[decoded_octets[3]];
-        } else {
-            output[j++] = base64_LUT[decoded_octets[2]];
-            output[j++] = '=';
-        }
-    }else{
-        output[j++] = base64_LUT[decoded_octets[1]];
-        output[j++] = '='; 
-        output[j++] = '='; 
-    }
-
-}
-// Return the code length
-return (j);
+<pre><code class="sh">perl -pe 's/\w\d\/\*\s(\w+)\s\*\//$1/g' cluttered_openacc_cuda_code.c
 </code></pre>
 
-<p>}
-<code>``
-Usually, you'd just throw some</code>#pragma acc`s at the around loops in the problem and let the compiler guide you. But, the idea of this tutorial is to help develop some analysis skills, so we&rsquo;ll look through the program first.</p>
+<p>Code is now:</p>
 
-<p>Now, the function basically takes in a character array of a fixed size, and generates an output array also of a known size (4 x input_size/3). The sizes are important to know, because the compiler needs to know how many bytes to transfer over the CPU<->GPU link. (Side note - if you dont specify those sizes clearly, the compiler will throw - <code>Accelerator restriction: size of the GPU copy of output is unknown</code>) We need to copy over the input array from the CPU to the GPU - or, Host and Device respectively in CUDA terminology. Sometimes, OpenACC documentation refers to the CPU as &lsquo;Self&rsquo; and GPU as &lsquo;Device&rsquo;. And when it is done processing, we must copy the output array back to the CPU. And, the <code>base64_LUT</code> is a common array used by all threads. So, that too will need to be on the GPU. So thats the basic data movement defined right there that you should aim to isolate first. <em>&ldquo;Whats my input? Whats my output?&rdquo;</em></p>
-
-<p>That <code>for (i=0..</code> loop can be parallelized to operate on chunks of the input in parallel. But, hang on. The next thing I&rsquo;d like to draw your attention to is - <strong>data dependence between loop iterations</strong>. What? Where? Well, if you take a closer look at how we&rsquo;re updating the output array, you&rsquo;ll quickly realize that <code>j++</code> implies that you rely on the previous value of <code>j</code> - i.e. the previous iteration. Why is that a problem? Well, for us to run the conversion in parallel, each thread must know its input index and output index without communicating with other threads. Because, if it needed to, that&rsquo;ll defeat the purpose of parallelization - thats as good as sequential CPU code. So, thats the first thing that needs fixing.  Dont worry, the compiler will warn you about this, but it helps to develop what I like to call <em>dependence vision</em> - the ability to &ldquo;see&rdquo; the data dependence. That&rsquo;ll help you with complex code bases where things are not so obvious. Moral of the story: <em>Try to code in a way that keeps the array indices independent of the previous loop iteration, and hopefully dependent on only the current iteration</em></p>
-
-<p>Going further, the <code>decoded_octets</code> variable is used as a scratch variable to hold 4 values that we eventually push to the output array. This means, each iteration of the loop uses it for itself - something we need to tell the compiler. This is a private variable for each iteration, or each parallel thread.</p>
-
-<p>Because we&rsquo;re dealing with pointers to access data arrays, there is an additional complication - but I&rsquo;ll get to that later.</p>
-
-<p>Armed with this non-zero knowledge of not-so-hidden parallelism in the program, we will now use OpenACC directives to express these ideas of parallelism and data movement.</p>
-
-<pre><code class="c++">unsigned int encode_block( char *input, unsigned int size, char *output){
-    // Variables for timekeeping
-    timestruct t1,t2;
-    long long time_elapsed;
-
-    char decoded_octets[4];
-    printf ("hex2base64::encode_block: Input Len: %d\n",size);
-
-    // i variable will track the input array position
-    // k variable will track the output array position
-    unsigned int i, k;
-
-    // Mark the start time
-    gettime( &amp;t1 );
-
-    #pragma acc data present(input[0:size]), present(base64_LUT[64]), copyout(output[0:4*size/3])
-    #pragma acc kernels 
-    #pragma acc loop private(decoded_octets, k)
-    for (i=0; i&lt;size; i=i+3){ 
-        // Calculate the output array position based
-        // on the input array position (loop iteration)
-        k = (4*i)/3;
-
-        decoded_octets[0] = input[i] &gt;&gt; 2;
-        output[k] = base64_LUT[decoded_octets[0]];
-
-        decoded_octets[1] = (input[i] &amp; 0x03) &lt;&lt; 4;
-
-        if (i+1 &lt; size){
-            decoded_octets[1] |= ((input[i+1] &amp; 0xF0) &gt;&gt; 4);
-            output[k+1] = base64_LUT[decoded_octets[1]];
-            decoded_octets[2] = ((input[i+1] &amp; 0x0F) &lt;&lt; 2); 
-            if (i+2 &lt; size){
-                decoded_octets[2] |= ((input[i+2] &amp; 0xC0) &gt;&gt; 6);
-                output[k+2] = base64_LUT[decoded_octets[2]];
-                decoded_octets[3] = input[i+2] &amp; 0x3F;
-                output[k+3] = base64_LUT[decoded_octets[3]];
-            } else {
-                output[k+2] = base64_LUT[decoded_octets[2]];
-                output[k+3] = '=';
-            }
-        }else{
-            output[k+1] = base64_LUT[decoded_octets[1]];
-            output[k+2] = '='; 
-            output[k+3] = '='; 
-        }
-
-    }
-    // Mark the end time
-    gettime(&amp;t2);
-
-    // Compute time elapsed
-    time_elapsed = usec(t1,t2);
-
-    // Display that to the user
-    printf("encode_block: %03ld microseconds\n", time_elapsed );
-
-    // Return the code length
-    return ((4*size)/3);
-}
+<pre><code class="c++">#include "cuda_runtime.h"
+#include "pgi_cuda_runtime.h"
+#include "hex2base64.n001.h"
+extern "C" __global__ __launch_bounds__(32) void
+encode_block_92_gpu(
+        unsigned int tc1,
+        signed char* __restrict__ input,
+        signed char* __restrict__ decoded_octets,
+        signed char* __restrict__ base64_LUT,
+        signed char* output,
+        unsigned int size)
+{
+    int _i_1, _i_2, _i_3;
+    unsigned int _ui_1;
+    signed char* _p_1, *_p_2, *_p_3;
+    unsigned int k;
+    unsigned int i25s;
+    unsigned int i26i;
+    signed char* decoded_octets;
+    i25s = 0;
+_BB_8: ;
+       i26i = ((((int)blockIdx.x)*(32))+((int)threadIdx.x))+((int)(i25s));
+       if( ((unsigned int)(i25s)&gt;=(unsigned int)(tc1)))  goto _BB_9;
+       if( ((unsigned int)(i26i)&gt;=(unsigned int)(tc1)))  goto _BB_9;
+       decoded_octets = (decoded_octets)+((long long)(((((int)blockIdx.x)*((int)blockDim.x))+((int)threadIdx.x))*(4)));
+       _ui_1 = (i26i)*(3);
+       k = ((_ui_1)*(4))/(3);
+       _p_1 = (signed char*)((input)+((long long)(_ui_1)));
+       *( signed char*)(decoded_octets) = (int)(*( signed char*)(( signed char*)_p_1))&gt;&gt;(2);
+       *( signed char*)((output)+((long long)(k))) = (*( signed char*)((base64_LUT)+((long long)((*( signed char*)(decoded_octets))))));
+       *( signed char*)((decoded_octets)+(1LL)) = ((*( signed char*)(( signed char*)_p_1))&amp;(3))&lt;&lt;(4);
+       if( ((unsigned int)(((int)(_ui_1))+(1))&gt;=(unsigned int)(size)))  goto _BB_22;
+       _ui_1 = (i26i)*(3);
+       // ....shortened for brevity....
 </code></pre>
 
-<p>Lets look at the <code>#pragma</code>s required to express this parallelism. I&rsquo;ve also added some crude instrumentation to measure the elapsed time for the function as a whole.</p>
+<p>Much better.</p>
 
-<ol>
-<li><p><code>#pragma acc kernels</code>
-This tells the compiler - &ldquo;Hey, I think this section of code can be parallelized. Go try and do that for me.&rdquo; Remember, pragmas are for the immediate next code block. So, this one applies to the <code>for (i=0..</code> loop. As you will soon learn, adding this macro does not mean that parallel code will be generated. The compiler will try and might fail - so watch the compile output closely for such cases.</p></li>
-<li><p><code>#pragma acc data present(input[0:size]), present(base64_LUT[64]), copyout(output[0:4*size/3])</code>
-Here, we&rsquo;re using the <code>present</code> clause to tell the compiler about data arrays that we will copy into GPU memory beforehand. Specifically, I have done that just before the function call to <code>encode_block</code> using the <code>copyin</code> clause. The <code>copyout</code> clause as the name suggests directs the compiler to copy out an array <code>output[0:4*size/3]</code> from the GPU to the CPU <em>at the end of the parallel thread&rsquo;s execution</em>.</p></li>
-<li><p><code>#pragma acc loop private(decoded_octets, k)</code>
-This one tells the compiler - &ldquo;look, the variables <code>decoded_octets</code> and <code>k</code> are <em>private</em> to each iteration of the loop, or each parallel thread. So create private copies of those variables and dont think they depend between loop iterations.</p></li>
-</ol>
+<p>Thats it! Hope this (and my next OpenACC post <code>TODO:insert link</code> ) helps you guys.</p>
 
-
-<p>With these changes in place, try giving it a whirl - run <code>make</code>. This is what you can expect:
-<code>sh
-PGI$ make
-rm -rf hex2base64.obj main.obj hex2base64.exe hex2base64.dwf hex2base64.pdb
-pgcc -I. -g -fast -Minfo -acc -ta=nvidia  -o hex2base64.exe hex2base64.c main.c
-hex2base64.c:
-encode:
- _&lt;boring part excluded for brevity&gt;_
-     89, Generating present(input[:size],base64_LUT[:64])
-         Generating copyout(output[:?])
-     92, Complex loop carried dependence of input-&gt;,output-&gt; prevents parallelization
-         Loop carried dependence due to exposed use of output[:?] prevents parallelization
-         Loop carried dependence of output-&gt; prevents parallelization
-         Loop carried backward dependence of output-&gt; prevents vectorization
-         Loop carried dependence of input-&gt; prevents parallelization
-         Loop carried backward dependence of input-&gt; prevents vectorization
-         Accelerator scalar kernel generated
-</code>
-Those slew of messages based on line 92 - thats our <code>for (i=0..</code> loop. Lets look at what these messages mean:
-1. <code>Loop carried dependence due to exposed use of output[:?] prevents parallelization</code>
-What do you mean exposed? Enter: the <strong>restrict keyword.</strong> By default, the compiler will assume that the underlying data object that a pointer points to can be manipulated by other pointers from other threads too. Super paranoid (as it should be!). So, this is perceived as &lsquo;data dependence&rsquo; and the whole story goes south. So, as a programmer we must give the compiler the assurance that only the specified pointer variable (or expressions using it) will be used to access that underlying data. So, in our case -
-<code>c++
-unsigned int encode_block( char *restrict input, unsigned int size, char *restrict output){
-</code>
-A compile will this change will see most of the issues above resolved. But the compiler still thinks there is some lingering data dependence. But, our analysis shows its all good and thread-safe. Lets reassure the compiler about the same by adding the <code>indepdent</code> clause to the <code>#pragma acc loop</code> line.</p>
-
-<pre><code class="c++">    #pragma acc loop private(decoded_octets, k) indepdent
-</code></pre>
-
-<p>The compiler will successfully generate a parallel <em>kernel</em> (CUDA speak for GPU function). Heres what that&rsquo;ll look like:
-<code>
-PGI$ make
-rm -rf hex2base64.obj main.obj hex2base64.exe hex2base64.dwf hex2base64.pdb
-pgcc -I. -g -fast -Minfo -acc -ta=nvidia  -o hex2base64.exe hex2base64.c main.c
-hex2base64.c:
-encode:
- _&lt;boring part excluded for brevity&gt;_
-     89, Generating present(input[:size],base64_LUT[:64])
-         Generating copyout(output[:?])
-92, Loop is parallelizable
-         Accelerator kernel generated
-         Generating Tesla code
-         92, #pragma acc loop gang, vector(128) /* blockIdx.x threadIdx.x */
-</code>
-Finally! The line <code>Generating Tesla Code</code> simply implies that it will generate parallel code for NVIDIA hardware. Doesnt mean that my 760m GPU is a tesla class card =D. The part about &lsquo;gang&rsquo; and &lsquo;vector(128)&rsquo; is to do with the CUDA programming model.</p>
-
-<p>Basically in CUDA, we have threads. And a collection of threads forms a thread-block. A collection of thread-blocks forms a grid. And you can express the number of threads, blocks and grids as 3 dimensional co-ordinates. Pretty handy for intuition when working with images and such.</p>
-
-<p>Heres how that maps to OpenACC&rsquo;s hardware agnostic hierarchy:</p>
-
-<table>
-<thead>
-<tr>
-<th>CUDA </th>
-<th> OpenACC</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Set of blocks (blockIdx.x) </td>
-<td> Gang</td>
-</tr>
-<tr>
-<td>Set of blocks (blockIdx.y)</td>
-<td> Worker</td>
-</tr>
-<tr>
-<td>Set of threads </td>
-<td> Vector</td>
-</tr>
-</tbody>
-</table>
-
-
-<p>So, it has produced 1 gang of 128 threads (didnt create an additional notion of workers here). Thats a default value, so you can use pragma&rsquo;s to fix that to a more realistic value for our problem size. Say, 32?
-<code>c++
-    #pragma acc loop private(decoded_octets, k) indepdent device_type(nvidia) vector(32)
-</code>
-One should always tweak the <code>vector()</code> and <code>gang()</code> constructs for optimum device utilization. Value for cores? (like Value for Money..). Most modern GPUs can support thousands of threads, but generaing extra empty threads will eat into performance because they will also be scheduled just the same as active threads and will consume slots that could have been used for some real active work on the GPU.</p>
-
-<p>Note the <code>device_type(nvidia)</code> clause which means that this <code>vector(32)</code> will be applied only for NVIDIA devices. And with <a href="https://devblogs.nvidia.com/parallelforall/7-powerful-new-features-openacc-2-0/">OpenACC-2.0</a>, you can have different configurations of these for different devices - giving you control without sacrificing performance portability:
-<code>c++
-    #pragma acc loop private(decoded_octets, k) indepdent device_type(nvidia) vector(32) \
-    device_type(radeon) vector_length(256) \
-    vector_length(16)
-</code>
-So, its 32 for NVIDIA cards, 256 for AMD Radeon (LoL) and 16 by default if the device is neither.</p>
-
-<h2>Code</h2>
-
-<p>Complete code available on github at - <a href="https://github.com/kmmankad/matasano-cuda/tree/master/challenge1/openacc">matasano-cuda/tree/master/challenge1/openacc</a></p>
-
-<p>Hope this wall of text has helped you better understand OpenACC and parallel programming in general. Thats where Part-1 of this ends. Part-2 will cover profiling, tweaking and more best practices.</p>
-
-<p>I&rsquo;d like to thank <a href="http://www.twitter.com/JeffLarkin">@JeffLarkin</a> for releasing all this awesome training content on the internet and for patiently guiding a newbie like myself through some of the trickier bits.</p>
-]]></content>
-  </entry>
-  
-  <entry>
-    <title type="html"><![CDATA[So You Want to CUDA?]]></title>
-    <link href="http://kmmankad.github.io/blog/2016/02/29/so-you-want-to-cuda/"/>
-    <updated>2016-02-29T19:12:59+05:30</updated>
-    <id>http://kmmankad.github.io/blog/2016/02/29/so-you-want-to-cuda</id>
-    <content type="html"><![CDATA[<p>This is a post about various available resources, and how you could go about becoming a real CUDA pro. This post isn&rsquo;t about convincing you about why you should definitely learn CUDA - I&rsquo;ll leave that to the voices in and around your head.</p>
-
-<p>To start out, I would highly recommend going through the free MOOC from Udacity - <a href="https://www.udacity.com/course/intro-to-parallel-programming--cs344">Intro to Parallel Programming</a>. This is a course that isn&rsquo;t too technical right off the bat and yet its assignments are non-trivial and could also be a bit challenging for some. But they really help you get some real world exposure to parallel programming in general, apart from the CUDA specific knowledge you would gain in the process. The course really helps develop a &lsquo;think parallel&rsquo; mindset - which I feel is as important, (if not more) compared to the knowledge of the actual semantics of a specific programming language or platform. The best part? You can do this without any special hardware - its all in the cloud!</p>
-
-<p>Along with the udacity course, there are a couple of great texts I would urge you guys to get:</p>
-
-<ol>
-<li><p><a href="http://www.amazon.com/CUDA-Example-Introduction-General-Purpose-Programming/dp/0131387685/ref=pd_bbs_sr_1/103-9839083-1501412?ie=UTF8&amp;s=books&amp;qid=1186428068&amp;sr=1-1">Sanders &amp; Kandrot. CUDA by Example: An Introduction to General-Purpose GPU Programming</a>
-This first one is a good text for beginners because it presents a very approachable learning curve. It has lots of small code examples, something I personally like. It lives up to its title in that respect. Having digestible code examples allow you to tinker with different concepts till you get the hang of things, without the overhead of programming full assignments. The book&rsquo;s code is available for download on <a href="https://developer.nvidia.com/cuda-example">NVIDIA&rsquo;s site here</a> and serves as handy reference later on as well. However, this book does not go too deep into the application side, and the &lsquo;bigger picture&rsquo; of parallel programming. Thats where the next book is better.</p></li>
-<li><p><a href="http://store.elsevier.com/Programming-Massively-Parallel-Processors/David-Kirk/isbn-9780124159921/">Kirk &amp; Hwu. Programming Massively Parallel Processors</a>
-This book definitely dives a bit deeper with regard to the technical aspects. Since it was created keeping in mind a typical graduate-level course on this subject, each chapter has exercises as well. Chapter 6 on performance considerations, and Chapter 7 on floating point math are two I consider particularly important for a learner to understand early on. The chapters on computational thinking and OpenCL make this a complete text on parallel programming. In addition, the code for the case studies discussed has been made available <a href="http://www.ks.uiuc.edu/Research/vmd/projects/ece498/">freely available online.</a></p></li>
-</ol>
-
-
-<p>And as you get more hands-on with the programming aspects of it, you will be able to appreciate the wealth of info in the <a href="http://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html">CUDA Best Practices Guide</a>. I actually have a printed copy I refer to often.</p>
-
-<p>Among must-read blogs, there is <a href="https://devblogs.nvidia.com/parallelforall/">NVIDIA&rsquo;s Parallel Forall blog</a> that has some really well written articles on a wide variety of topics and applications in accelerated computing. Most of the CUDA related content posted here is best understood by someone who already has a higher-than-basic understanding of CUDA. Still, do subscribe.</p>
-
-<p>I almost forgot to mention the <a href="https://nvidia.qwiklab.com/">hands-on labs offered by NVIDIA via qwiklabs</a>. While these aren&rsquo;t anywhere as fully featured as the resources mentioned above, these serve as good exercises nonetheless. These are also in the cloud, hosted on <a href="http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using_cluster_computing.html">GPU enabled AWS instances</a>.</p>
-
-<p>Though there are lots of such free(-ish) learning resources out there, you really need access to some hardware in order to really sharpen your skills. But this does not mean you need to spend big bucks. Lots of older GPUs support CUDA, and if you&rsquo;re part of an academic institution, you could also look at <a href="https://developer.nvidia.com/academic_hw_seeding">Nvidia&rsquo;s hardware grant program</a>. You can also run your CUDA code on your multicore CPU (coming-soon-a-link-to-a-tutorial-on-how-to-do-that)</p>
-
-<p>And finally, you need to have a project that you really want to invest your sweat and skills into. Something to tie all of this together. It could be a cryptographic algorithm, or a massively parallel numerical method or perhaps something cool in the field of machine learning. Maybe you could build a encoder/decoder for an image format. Basically, you can CUDA-fy mostly anything compute intensive around you. I&rsquo;m not saying that <em>everything</em> is going to work well with CUDA - thats the topic for another blog post. But as someone starting out, one shouldn&rsquo;t be overly picky about that.</p>
-
-<p>Oh, and theres always <a href="http://www.stackoverflow.com/questions/tagged/cuda">stackoverflow</a>, <a href="www.reddit.com/r/CUDA">/r/CUDA</a> and <a href="https://devtalk.nvidia.com/default/board/53/accelerated-computing/">NVIDIA&rsquo;s developer forum</a> if you get stuck somewhere - or even just want to discuss your ideas.</p>
-
-<p>As with any new endeavor, you will fail and learn a lot. But the key as always is to persevere and accept experience that comes your way, whatever the form.</p>
+<p>PS: I wonder if a screencast is a better medium for my (b)log.</p>
 ]]></content>
   </entry>
   

@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>http://kmmankad.github.io/blog/2016/04/19/openacc-view-generated-cuda-code/</loc>
+    <lastmod>2016-04-19T07:27:14+05:30</lastmod>
+  </url>
+  <url>
     <loc>http://kmmankad.github.io/blog/2016/04/14/performance-prediction-of-cuda-kernels/</loc>
     <lastmod>2016-04-14T06:38:26+05:30</lastmod>
   </url>
@@ -47,5 +51,11 @@
   </url>
   <url>
     <loc>http://kmmankad.github.io/blog/categories/parallel/</loc>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/categories/cuda/</loc>
+  </url>
+  <url>
+    <loc>http://kmmankad.github.io/blog/categories/openacc/</loc>
   </url>
 </urlset>
