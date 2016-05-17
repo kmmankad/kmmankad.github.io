@@ -10,7 +10,7 @@ From [http://developer.nvidia.com/openacc](http://developer.nvidia.com/openacc):
 > OpenACC is a directive-based programming model designed to provide a simple yet powerful approach to accelerators without significant programming effort.
 
 What that is means is, you can pickup existing code written for an x86 CPU, and add some compiler `#pragmas`, compile with an OpenACC capable compiler - and voila! You get accelerated binaries for a range of hardware accelerators - Nvidia GPUs, AMD GPUs and even Intel multi-core CPUs. Thats really the USP of OpenACC - a single copy of the source code will deliver performance portability across this range of hardware platforms. 
-So, to be successful with OpenACC all you need are strong concepts in parallel programming, some know-how about OpenACC syntax and you’re good to go! You dont need to really know too many lower level hardware details with OpenACC, as opposed to, maybe CUDA C. However, this is a double edged sword - I will revisit this later in this post. Remember, OpenACC is about expressing parallelism - its not GPU programming.
+So, to be successful with OpenACC all you need are strong concepts in parallel programming, some know-how about OpenACC syntax and you’re good to go! You dont need to really know too many lower level hardware details with OpenACC, as opposed to, maybe CUDA C. However, this is a double edged sword - I will revisit this later in this post. Remember, OpenACC is about expressing parallelism in a platform independent way - its not GPU programming.
 
 There are some really good tutorials on OpenACC itself available online:  
 1. [Jeff Larkin's post on the Parallel Forall blog](https://devblogs.nvidia.com/parallelforall/getting-started-openacc/)  
@@ -18,8 +18,8 @@ There are some really good tutorials on OpenACC itself available online:
 
 The recommended approach for parallelism anywhere is to:  
 1. Try and use existing parallel optimized libraries like cuBLAS, cuDNN etc. if they exist for your application.  
-2. If you dont get those, try OpenACC on your code. That should get you about 80% of the maximum available performance.  
-_Ofcourse, that is a very rough number and is subject to, you guessed it, your code and the GPU hardware you're running._
+2. If you dont get those, try OpenACC on your code. That should get you about 80% of the maximum available performance._Ofcourse, that is a very rough number and is subject to, you guessed it, your code and the GPU hardware you're running._ 
+
 3. Roll your own CUDA kernels. This is definitely the most involved of the 3 options, but it will allow you to squeeze
 every last drop of that good perf juice from your software and hardware.  
 
@@ -91,13 +91,17 @@ unsigned int encode_block( char* input, unsigned int size, char* output){
 	return (j);
 }
 ```
-Usually, you'd just throw some `#pragma acc`s at the around loops in the problem and let the compiler guide you. But, the idea of this tutorial is to help develop some analysis skills, so we'll look through the program first.
-     
-Now, the function basically takes in a character array of a fixed size, and generates an output array also of a known size (4 x input_size/3). The sizes are important to know, because the compiler needs to know how many bytes to transfer over the CPU<->GPU link. (Side note - if you dont specify those sizes clearly, the compiler will throw - `Accelerator restriction: size of the GPU copy of output is unknown`) We need to copy over the input array from the CPU to the GPU - or, Host and Device respectively in CUDA terminology. Sometimes, OpenACC documentation refers to the CPU as 'Self' and GPU as 'Device'. And when it is done processing, we must copy the output array back to the CPU. And, the `base64_LUT` is a common array used by all threads. So, that too will need to be on the GPU. So thats the basic data movement defined right there that you should aim to isolate first. _"Whats my input? Whats my output?"_
+Usually, you'd just throw some `#pragma acc`s at the around loops in the problem and let the compiler and profiler guide you. But, the idea of this tutorial is to help develop some analysis skills, so we'll look through the program first.
 
-That `for (i=0..` loop can be parallelized to operate on chunks of the input in parallel. But, hang on. The next thing I'd like to draw your attention to is - **data dependence between loop iterations**. What? Where? Well, if you take a closer look at how we're updating the output array, you'll quickly realize that `j++` implies that you rely on the previous value of `j` - i.e. the previous iteration. Why is that a problem? Well, for us to run the conversion in parallel, each thread must know its input index and output index without communicating with other threads. Because, if it needed to, that'll defeat the purpose of parallelization - thats as good as sequential CPU code. So, thats the first thing that needs fixing.  Dont worry, the compiler will warn you about this, but it helps to develop what I like to call _dependence vision_ - the ability to "see" the data dependence. That'll help you with complex code bases where things are not so obvious. Moral of the story: _Try to code in a way that keeps the array indices independent of the previous loop iteration, and hopefully dependent on only the current iteration_
+_"Whats my input? Whats my output?"_
 
-Going further, the `decoded_octets` variable is used as a scratch variable to hold 4 values that we eventually push to the output array. This means, each iteration of the loop uses it for itself - something we need to tell the compiler. This is a private variable for each iteration, or each parallel thread.
+Now, the function basically takes in a character array of a fixed size, and generates an output array also of a known size (4 x input_size/3). The sizes are important to know, because the compiler needs to know how many bytes to transfer over the CPU<->GPU link. (Side note - if you dont specify those sizes clearly, the compiler will throw - `Accelerator restriction: size of the GPU copy of output is unknown`). We need to copy over the input array from the CPU to the GPU - or, Host and Device respectively in CUDA terminology. Sometimes, OpenACC documentation refers to the CPU as 'Self' and GPU as 'Device'. And when it is done processing, we must copy the output array back to the CPU. Also, the `base64_LUT` is a common array used by all routines that will process the input data (in parallel. We call them threads). So, that too will need to be on the GPU. So we have our basic data movement identified.
+
+_"Lets OpenACC."_
+
+That `for (i=0..` loop can be parallelized to operate on chunks of the input in parallel. But, hang on. The next thing I'd like to draw your attention to is - **data dependence between loop iterations**. What? Where? Well, if you take a closer look at how we're updating the output array, you'll quickly realize that `j++` implies that you rely on the previous value of `j` - i.e. the previous iteration. Why is that a problem? Well, for us to run the conversion in parallel, each thread must know its input index and output index without communicating with other threads. Because, if they needed to, that'll defeat the purpose of parallelization - thats as good as sequential CPU code. So, thats the first thing that needs fixing.  Dont worry, the compiler will warn you about this, but it helps to develop what I like to call _dependence vision_ - the ability to "see" the data dependence. That'll help you with complex code bases where things are not so obvious. Moral of the story: _Try to code in a way that keeps the array indices independent of the previous loop iteration, and hopefully dependent on only the current iteration_
+
+Going further, the `decoded_octets` variable is used as a scratch variable to hold 4 values that we eventually push to the output array. This means, each iteration of the loop uses it for itself - something we need to tell the compiler. This is a private variable for each iteration, or each parallel thread. This isnt something we need to copy back and forth across the GPU.
 
 Because we're dealing with pointers to access data arrays, there is an additional complication - but I'll get to that later.
 
@@ -168,13 +172,13 @@ unsigned int encode_block( char *input, unsigned int size, char *output){
 Lets look at the `#pragma`s required to express this parallelism. I've also added some crude instrumentation to measure the elapsed time for the function as a whole.
 
 1. `#pragma acc kernels`
-This tells the compiler - "Hey, I think this section of code can be parallelized. Go try and do that for me." Remember, pragmas are for the immediate next code block. So, this one applies to the `for (i=0..` loop. As you will soon learn, adding this macro does not mean that parallel code will be generated. The compiler will try and might fail - so watch the compile output closely for such cases.
+This tells the compiler - "Hey, I think this section of code can be parallelized. Go try and do that for me." Remember, pragmas are for the immediate next code block. So, this one applies to the `for (i=0..` loop. As you will see sometimes, adding this macro does not mean that parallel code will be generated. The compiler will try and might fail - so watch the compile output closely for such cases.
 
 2. `#pragma acc data present(input[0:size]), present(base64_LUT[64]), copyout(output[0:4*size/3])`
 Here, we're using the `present` clause to tell the compiler about data arrays that we will copy into GPU memory beforehand. Specifically, I have done that just before the function call to `encode_block` using the `copyin` clause. The `copyout` clause as the name suggests directs the compiler to copy out an array `output[0:4*size/3]` from the GPU to the CPU _at the end of the parallel thread's execution_.
 
 3. `#pragma acc loop private(decoded_octets, k)`
-This one tells the compiler - "look, the variables `decoded_octets` and `k` are _private_ to each iteration of the loop, or each parallel thread. So create private copies of those variables and dont think they depend between loop iterations.
+This one tells the compiler - "Look, the variables `decoded_octets` and `k` are _private_ to each iteration of the loop or each parallel thread. So create private copies of those variables. And since these are private, the compiler will allocate these on appropriate memory in the accelerator. For NVIDIA GPUs, thats the local registers in each SM - local memory.
 
 With these changes in place, try giving it a whirl - run `make`. This is what you can expect:
 ```sh
@@ -200,7 +204,7 @@ What do you mean exposed? Enter: the **restrict keyword.** By default, the compi
 ```c++
 unsigned int encode_block( char *restrict input, unsigned int size, char *restrict output){
 ```
-A compile will this change will see most of the issues above resolved. But the compiler still thinks there is some lingering data dependence. But, our analysis shows its all good and thread-safe. Lets reassure the compiler about the same by adding the `indepdent` clause to the `#pragma acc loop` line.
+A re-compile with this change will see most of the issues above resolved. But the compiler still thinks there is some lingering data dependence. But, our analysis shows its all good and thread-safe. Lets reassure the compiler about the same by adding the `indepdent` clause to the `#pragma acc loop` line.
 
 ```c++
 	#pragma acc loop private(decoded_octets, k) indepdent
@@ -223,21 +227,21 @@ encode:
 ```
 Finally! The line `Generating Tesla Code` simply implies that it will generate parallel code for NVIDIA hardware. Doesnt mean that my 760m GPU is a tesla class card =D. The part about 'gang' and 'vector(128)' is to do with the CUDA programming model.
 
-Basically in CUDA, we have threads. And a collection of threads forms a thread-block. A collection of thread-blocks forms a grid. And you can express the number of threads, blocks and grids as 3 dimensional co-ordinates. Pretty handy for intuition when working with images and such.
+Basically in CUDA, each parallel GPU sub-routine, is a thread. And a collection of threads forms a thread-block. A collection of thread-blocks forms a grid. And you can express the number of threads, blocks and grids as 3 dimensional co-ordinates. Pretty handy for intuition when working with images and such. But, from a hardware point of view, the ideal quantum of parallel work on NVIDIA GPUs is a warp (set or vector of 32 threads - more on that some other day.)
 
 Heres how that maps to OpenACC's hardware agnostic hierarchy:  
 
 CUDA | OpenACC
 ------------ | -------------
 Set of blocks (blockIdx.x) | Gang
-Set of blocks (blockIdx.y)| Worker
-Set of threads | Vector
+Set of threads (threadIdx.y)| Worker
+Set of threads (threadIdx.x)| Vector
 
-So, it has produced 1 gang of 128 threads (didnt create an additional notion of workers here). Thats a default value, so you can use pragma's to fix that to a more realistic value for our problem size. Say, 32?
+So, it has produced 1 gang of 128 threads (didn't create an additional notion of workers here). Thats a default value, so you can use pragma's to fix that to a more realistic value for our problem size. Say, 32?
 ```c++
 	#pragma acc loop private(decoded_octets, k) indepdent device_type(nvidia) vector(32)
 ```
-One should always tweak the `vector()` and `gang()` constructs for optimum device utilization. Value for cores? (like Value for Money..). Most modern GPUs can support thousands of threads, but generaing extra empty threads will eat into performance because they will also be scheduled just the same as active threads and will consume slots that could have been used for some real active work on the GPU.
+One should always tweak the `vector()` and `gang()` constructs for optimum device utilization. Kinda like value for cores? (like value for Money..). Most modern GPUs can support thousands of threads, but generaing extra empty threads will eat into performance because they will also be scheduled just the same as active threads and will consume slots that could have been used for some real active work on the GPU.
 
 Note the `device_type(nvidia)` clause which means that this `vector(32)` will be applied only for NVIDIA devices. And with [OpenACC-2.0](https://devblogs.nvidia.com/parallelforall/7-powerful-new-features-openacc-2-0/), you can have different configurations of these for different devices - giving you control without sacrificing performance portability:
 ```c++
@@ -245,7 +249,7 @@ Note the `device_type(nvidia)` clause which means that this `vector(32)` will be
 	device_type(radeon) vector_length(256) \
 	vector_length(16)
 ```
-So, its 32 for NVIDIA cards, 256 for AMD Radeon (LoL) and 16 by default if the device is neither.
+So in the above snippet, its 32 for NVIDIA cards, 256 for AMD Radeon (haha, good joke!) and 16 by default if the device is neither.
 
 ## Code
 Complete code available on github at - [matasano-cuda/tree/master/challenge1/openacc](https://github.com/kmmankad/matasano-cuda/tree/master/challenge1/openacc)
